@@ -2,6 +2,8 @@ import { client } from './client';
 import { guildMemberAddHandler } from './events/guildMemberAdd';
 import { guildMemberUpdateHandler } from './events/guildMemberUpdate';
 import { guildMemberRemoveHandler } from './events/guildMemberRemove';
+import { startEncounter } from './commands/admin/startEncounter';
+import { endEncounter } from './commands/admin/endEncounter';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -24,5 +26,35 @@ client.on('guildMemberUpdate', (oldMember, newMember) => {
 client.on('guildMemberRemove', (member) => {
     guildMemberRemoveHandler(member, LOG_CHANNEL_ID);
 });
+
+client.on('ready', async () => {
+    const guild = client.guilds.cache.first();
+    if (guild) {
+        await guild.commands.create(startEncounter.data.toJSON());
+        await guild.commands.create(endEncounter.data.toJSON());
+    }
+});
+
+client.on('interactionCreate', async (interaction) => {
+    if (!interaction.isCommand()) return;
+
+    const { commandName } = interaction;
+
+    try {
+        if (commandName === 'startencounter') {
+            await startEncounter.execute(interaction);
+        } else if (commandName === 'endencounter') {
+            await endEncounter.execute(interaction);
+        }
+    } catch (error) {
+        console.error(`Error executing ${commandName} command:`, error);
+        if (interaction.deferred || interaction.replied) {
+            await interaction.followUp({ content: 'There was an error while executing this command.' });
+        } else {
+            await interaction.reply({ content: 'There was an error while executing this command.', ephemeral: true });
+        }
+    }
+});
+
 
 client.login(process.env.DISCORD_TOKEN);
