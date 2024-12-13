@@ -1,11 +1,10 @@
 import { client } from './client';
-import { guildMemberAddHandler } from './events/guildMemberAdd';
-import { guildMemberUpdateHandler } from './events/guildMemberUpdate';
-import { guildMemberRemoveHandler } from './events/guildMemberRemove';
-import { startEncounter } from './commands/admin/startEncounter';
-import { endEncounter } from './commands/admin/endEncounter';
+import { guildMemberAddHandler, guildMemberRemoveHandler, guildMemberUpdateHandler } from './eventHandlers/guildMembers';
+import {startEncounter, endEncounter} from './commands/admin';
 import dotenv from 'dotenv';
+import { initializeTables } from './data/db/tables';
 
+initializeTables();
 dotenv.config();
 
 const LOG_CHANNEL_ID = '1317008399292174448';

@@ -1,6 +1,9 @@
 import { PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
-import { encounterManager } from '../../systems/encounterManager';
-import { resetChannelPermissions } from '../../systems/permissionsManager';
+import { EncounterService } from '../../services/encounterService';
+import { PermissionsService } from '../../services/permissionsService';
+
+const encounterService = new EncounterService();
+const permissionsService = new PermissionsService();
 
 export const endEncounter = {
     data: new SlashCommandBuilder()
@@ -8,21 +11,31 @@ export const endEncounter = {
         .setDescription('End the current combat encounter in this channel.')
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     async execute(interaction: any) {
+        await interaction.deferReply();
+
         const channel = interaction.channel;
 
         if (!channel.isTextBased()) {
-            return interaction.reply('This command can only be used in text channels.');
+            return interaction.followUp('This command can only be used in text channels.');
         }
 
-        const encounter = encounterManager.getEncounter(channel.id);
-        if (!encounter) {
-            return interaction.reply('No active encounter in this channel.');
+        try {
+            // Check if an encounter exists in the channel
+            const encounter = await encounterService.getEncounter(channel.id);
+            if (!encounter) {
+                return interaction.followUp('No active encounter in this channel.');
+            }
+
+            // End the encounter
+            await encounterService.endEncounter(channel.id);
+
+            // Reset channel permissions
+            await permissionsService.resetChannelPermissions(channel);
+
+            await interaction.followUp('Combat encounter ended. Channel permissions restored.');
+        } catch (error) {
+            console.error('Error ending encounter:', error);
+            await interaction.followUp(`Failed to end encounter: ${error}`);
         }
-
-        // End the encounter and reset permissions
-        encounterManager.endEncounter(channel.id);
-        await resetChannelPermissions(channel);
-
-        return interaction.reply('Combat encounter ended. Channel permissions restored.');
     }
 };
