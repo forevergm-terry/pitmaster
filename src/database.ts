@@ -15,7 +15,8 @@ db.serialize(() => {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id TEXT NOT NULL,
             username TEXT NOT NULL,
-            joined_at TEXT NOT NULL
+            joined_at TEXT NOT NULL,
+            left_at TEXT
         )
     `);
 

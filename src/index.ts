@@ -1,6 +1,7 @@
 import { client } from './client';
 import { guildMemberAddHandler } from './events/guildMemberAdd';
 import { guildMemberUpdateHandler } from './events/guildMemberUpdate';
+import { guildMemberRemoveHandler } from './events/guildMemberRemove';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -18,6 +19,10 @@ client.on('guildMemberAdd', (member) => {
 
 client.on('guildMemberUpdate', (oldMember, newMember) => {
     guildMemberUpdateHandler(oldMember as any, newMember as any, LOG_CHANNEL_ID);
+});
+
+client.on('guildMemberRemove', (member) => {
+    guildMemberRemoveHandler(member, LOG_CHANNEL_ID);
 });
 
 client.login(process.env.DISCORD_TOKEN);
